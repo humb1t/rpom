@@ -10,17 +10,17 @@ extern crate rocket_contrib;
 #[macro_use]
 extern crate serde_derive;
 
+use diesel::prelude::*;
 use diesel::result::QueryResult;
 use domain::Order;
 use dotenv::dotenv;
 use rocket_contrib::Json;
 use std::env;
-use diesel::prelude::*;
 
 pub mod schema;
 
 mod db_pool {
-    use diesel::r2d2::{ConnectionManager, PooledConnection, Pool};
+    use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
     use diesel::sqlite::SqliteConnection;
     use std::ops::Deref;
 
@@ -46,8 +46,8 @@ mod db_pool {
 mod web {
     use db_pool;
     use rocket::{Outcome, Request, State};
-    use rocket::request::{self, FromRequest};
     use rocket::http::Status;
+    use rocket::request::{self, FromRequest};
 
     /// Attempts to retrieve a single connection from the managed database pool. If
     /// no pool is currently managed, fails with an `InternalServerError` status. If
@@ -82,12 +82,13 @@ mod domain {
 fn order_create(order: Json<Order>, conn: db_pool::DbConn) -> Json<Order> {
     use schema::orders::dsl::*;
     let order = order.0;
-    let pid = diesel::insert_into(orders)
+    let pid: i32 = order.id;
+    diesel::insert_into(orders)
         .values(&order)
         .execute(&*conn)
         .expect("Error saving new order");
     let order = orders
-        .find(id)
+        .find(pid)
         .first::<Order>(&*conn)
         .expect("Error loading order");
 
