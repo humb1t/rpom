@@ -10,69 +10,77 @@ extern crate rocket_contrib;
 #[macro_use]
 extern crate serde_derive;
 
-use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager,PooledConnection};
 use diesel::result::QueryResult;
+use domain::Order;
 use dotenv::dotenv;
-use rocket::{Outcome, Request, State};
-use rocket::http::Status;
-use rocket::request::{self, FromRequest};
 use rocket_contrib::Json;
-use schema::orders;
-use schema::orders::dsl::*;
 use std::env;
-use std::ops::Deref;
+use diesel::prelude::*;
 
 pub mod schema;
 
 mod db_pool {
-    use diesel::r2d2::{ConnectionManager, Pool};
+    use diesel::r2d2::{ConnectionManager, PooledConnection, Pool};
     use diesel::sqlite::SqliteConnection;
+    use std::ops::Deref;
 
     pub type SqlitePool = Pool<ConnectionManager<SqliteConnection>>;
+
+    pub struct DbConn(pub PooledConnection<ConnectionManager<SqliteConnection>>);
 
     pub fn init_pool(database_url: &str) -> SqlitePool {
         let manager =
             ConnectionManager::<SqliteConnection>::new(database_url);
         Pool::new(manager).expect("db pool")
     }
-}
 
-pub struct DbConn(pub PooledConnection<ConnectionManager<SqliteConnection>>);
+    impl Deref for DbConn {
+        type Target = SqliteConnection;
 
-/// Attempts to retrieve a single connection from the managed database pool. If
-/// no pool is currently managed, fails with an `InternalServerError` status. If
-/// no connections are available, fails with a `ServiceUnavailable` status.
-impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
-    type Error = ();
-
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
-        let pool = request.guard::<State<db_pool::SqlitePool>>()?;
-        match pool.get() {
-            Ok(conn) => Outcome::Success(DbConn(conn)),
-            Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
+        fn deref(&self) -> &Self::Target {
+            &self.0
         }
     }
 }
 
-impl Deref for DbConn {
-    type Target = SqliteConnection;
+mod web {
+    use db_pool;
+    use rocket::{Outcome, Request, State};
+    use rocket::request::{self, FromRequest};
+    use rocket::http::Status;
 
-    fn deref(&self) -> &Self::Target {
-        &self.0
+    /// Attempts to retrieve a single connection from the managed database pool. If
+    /// no pool is currently managed, fails with an `InternalServerError` status. If
+    /// no connections are available, fails with a `ServiceUnavailable` status.
+    impl<'a, 'r> FromRequest<'a, 'r> for db_pool::DbConn {
+        type Error = ();
+
+        fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+            let pool = request.guard::<State<db_pool::SqlitePool>>()?;
+            match pool.get() {
+                Ok(conn) => Outcome::Success(db_pool::DbConn(conn)),
+                Err(_) => Outcome::Failure((Status::ServiceUnavailable, ()))
+            }
+        }
     }
 }
 
-#[derive(Serialize, Deserialize, Queryable, Insertable, Copy, Clone)]
-#[table_name = "orders"]
-struct Order {
-    pub id: i32,
-    pub specification_id: i32,
-    pub quantity: i32,
+mod domain {
+    use diesel::prelude::*;
+    use schema::orders;
+
+    #[derive(Serialize, Deserialize, Queryable, Insertable, Copy, Clone)]
+    #[table_name = "orders"]
+    pub struct Order {
+        pub id: i32,
+        pub specification_id: i32,
+        pub quantity: i32,
+    }
 }
 
 #[post("/orders", data = "<order>")]
-fn order_create(order: Json<Order>, conn: DbConn) -> Json<Order> {
+fn order_create(order: Json<Order>, conn: db_pool::DbConn) -> Json<Order> {
+    use schema::orders::dsl::*;
     let order = order.0;
     let pid = diesel::insert_into(orders)
         .values(&order)
@@ -87,7 +95,8 @@ fn order_create(order: Json<Order>, conn: DbConn) -> Json<Order> {
 }
 
 #[get("/orders/<fid>")]
-fn order_get(fid: i32, conn: DbConn) -> Json<Order> {
+fn order_get(fid: i32, conn: db_pool::DbConn) -> Json<Order> {
+    use schema::orders::dsl::*;
     let order = orders
         .find(fid)
         .first::<Order>(&*conn)
@@ -97,7 +106,8 @@ fn order_get(fid: i32, conn: DbConn) -> Json<Order> {
 }
 
 #[get("/orders")]
-fn order_get_all(conn: DbConn) -> QueryResult<Json<Vec<Order>>> {
+fn order_get_all(conn: db_pool::DbConn) -> QueryResult<Json<Vec<Order>>> {
+    use schema::orders::dsl::*;
     orders.load::<Order>(&*conn)
         .map(|ordrs| Json(ordrs))
 }
