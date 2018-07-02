@@ -68,7 +68,7 @@ struct Order {
 }
 
 #[post("/orders", data = "<order>")]
-fn new_order(order: Json<Order>) -> Json<Order> {
+fn order_create(order: Json<Order>) -> Json<Order> {
     order
 }
 
@@ -83,22 +83,20 @@ fn order_get(id: i32, conn: DbConn) -> Json<Order> {
     Json(order)
 }
 
-/*#[get("/orders")]
-fn get_orders(conn: DbConn) -> Vec<Json<Order>> {
+#[get("/orders")]
+fn order_get_all(conn: DbConn) -> QueryResult<Json<Vec<Order>>> {
     use schema::orders::dsl::*;
-    orders.load(&*conn)
-        .unwrap()
-        .iter()
-        .map(|orders| Json(order))
-        .collect::<Vec<_>>()
-}*/
+    orders.load::<Order>(&*conn)
+        .map(|ordrs| Json(ordrs))
+}
 
 fn main() {
     rocket::ignite().manage(init_pool()).mount(
         "/",
         routes![
-           new_order,
-           order_get
+           order_create,
+           order_get,
+           order_get_all
          ],
     ).launch();
 }
