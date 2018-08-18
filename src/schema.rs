@@ -5,3 +5,15 @@ table! {
         quantity -> Integer,
     }
 }
+
+table! {
+    specifications (id) {
+        id -> Integer,
+        name -> Text,
+    }
+}
+
+allow_tables_to_appear_in_same_query!(
+    orders,
+    specifications,
+);

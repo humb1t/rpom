@@ -12,7 +12,7 @@ pub struct Order {
     pub quantity: i32,
 }
 
-#[post("/orders", data = "<order>")]
+#[post("/", data = "<order>")]
 fn create(order: Json<Order>, conn: db_pool::DbConn) -> Json<Order> {
     use schema::orders::dsl::*;
     let order: Order = order.0;
@@ -29,7 +29,7 @@ fn create(order: Json<Order>, conn: db_pool::DbConn) -> Json<Order> {
     Json(order)
 }
 
-#[get("/orders/<fid>")]
+#[get("/<fid>")]
 fn get(fid: i32, conn: db_pool::DbConn) -> Json<Order> {
     use schema::orders::dsl::*;
     let order = orders
@@ -40,7 +40,7 @@ fn get(fid: i32, conn: db_pool::DbConn) -> Json<Order> {
     Json(order)
 }
 
-#[get("/orders")]
+#[get("/")]
 fn get_all(conn: db_pool::DbConn) -> QueryResult<Json<Vec<Order>>> {
     use schema::orders::dsl::*;
     orders.load::<Order>(&*conn)

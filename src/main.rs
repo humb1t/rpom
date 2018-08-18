@@ -14,6 +14,7 @@ use dotenv::dotenv;
 use std::env;
 
 pub mod order;
+pub mod specification;
 pub mod db_pool;
 pub mod schema;
 
@@ -24,12 +25,22 @@ fn main() {
     rocket::ignite()
         .manage(
             db_pool::init_pool(&database_url)
-        ).mount(
-        "/",
+        )
+        .mount(
+            "/orders",
         routes![
            order::create,
            order::get,
            order::get_all
          ],
-    ).launch();
+        )
+        .mount(
+            "/specifications",
+            routes![
+                specification::create,
+                specification::get,
+                specification::get_all
+            ],
+        )
+        .launch();
 }
