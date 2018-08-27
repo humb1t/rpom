@@ -43,5 +43,5 @@ fn get(fid: i32, conn: db_pool::DbConn) -> Json<Specification> {
 fn get_all(conn: db_pool::DbConn) -> QueryResult<Json<Vec<Specification>>> {
     use schema::specifications::dsl::*;
     specifications.load::<Specification>(&*conn)
-        .map(|ordrs| Json(ordrs))
+        .map(|list| Json(list))
 }

@@ -14,6 +14,7 @@ use dotenv::dotenv;
 use std::env;
 
 pub mod order;
+pub mod product;
 pub mod specification;
 pub mod db_pool;
 pub mod schema;
@@ -32,6 +33,14 @@ fn main() {
            order::create,
            order::get,
            order::get_all
+         ],
+        )
+        .mount(
+            "/products",
+        routes![
+           product::create,
+           product::get,
+           product::get_all
          ],
         )
         .mount(
