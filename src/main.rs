@@ -49,7 +49,8 @@ fn main() {
                 specification::create,
                 specification::get,
                 specification::get_all,
-                specification::update
+                specification::update,
+                specification::delete
             ],
         )
         .launch();

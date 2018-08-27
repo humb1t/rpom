@@ -60,3 +60,12 @@ fn update(fid: i32, specification: Json<Specification>, conn: db_pool::DbConn) -
 
     Json(result)
 }
+
+#[delete("/<fid>")]
+fn delete(fid: i32, conn: db_pool::DbConn) {
+    use schema::specifications::dsl::*;
+    diesel::delete(
+        specifications.find(fid)
+    ).execute(&*conn)
+        .expect("Error deleting specification");
+}
