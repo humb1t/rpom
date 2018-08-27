@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use rocket_contrib::Json;
 use schema::specifications;
 
-#[derive(Serialize, Deserialize, Queryable, Insertable, Clone)]
+#[derive(Serialize, Deserialize, Queryable, AsChangeset, Insertable, Clone)]
 #[table_name = "specifications"]
 pub struct Specification {
     pub id: i32,
@@ -44,4 +44,19 @@ fn get_all(conn: db_pool::DbConn) -> QueryResult<Json<Vec<Specification>>> {
     use schema::specifications::dsl::*;
     specifications.load::<Specification>(&*conn)
         .map(|list| Json(list))
+}
+
+#[patch("/<fid>", data = "<specification>")]
+fn update(fid: i32, specification: Json<Specification>, conn: db_pool::DbConn) -> Json<Specification> {
+    use schema::specifications::dsl::*;
+    diesel::update(
+        specifications.find(fid)
+    ).set(specification.into_inner())
+        .execute(&*conn)
+        .expect("Error updating specification");
+    let result = specifications.find(fid)
+        .first::<Specification>(&*conn)
+        .expect("Error loading specification");
+
+    Json(result)
 }

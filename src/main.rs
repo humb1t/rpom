@@ -48,7 +48,8 @@ fn main() {
             routes![
                 specification::create,
                 specification::get,
-                specification::get_all
+                specification::get_all,
+                specification::update
             ],
         )
         .launch();
