@@ -1,6 +1,8 @@
 use db_pool;
 use diesel;
 use diesel::prelude::*;
+use rocket::http::RawStr;
+use rocket::request::FromForm;
 use rocket_contrib::Json;
 use schema::specifications;
 
@@ -9,6 +11,11 @@ use schema::specifications;
 pub struct Specification {
     pub id: i32,
     pub name: String,
+}
+
+#[derive(FromForm)]
+pub struct SpecForm<'r> {
+    name: Result<String, &'r RawStr>,
 }
 
 #[post("/", data = "<specification>")]
@@ -33,6 +40,17 @@ fn get(fid: i32, conn: db_pool::DbConn) -> Json<Specification> {
     use schema::specifications::dsl::*;
     let specification = specifications
         .find(fid)
+        .first::<Specification>(&*conn)
+        .expect("Error loading specification");
+
+    Json(specification)
+}
+
+#[get("/search?<spec>")]
+fn find(spec: SpecForm, conn: db_pool::DbConn) -> Json<Specification> {
+    use schema::specifications::dsl::*;
+    let specification = specifications
+        .filter(name.eq(spec.name.ok().expect("Can't get param")))
         .first::<Specification>(&*conn)
         .expect("Error loading specification");
 

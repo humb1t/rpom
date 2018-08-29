@@ -5,6 +5,7 @@
 #[macro_use]
 extern crate diesel;
 extern crate dotenv;
+#[macro_use]
 extern crate rocket;
 extern crate rocket_contrib;
 #[macro_use]
@@ -48,6 +49,7 @@ fn main() {
             routes![
                 specification::create,
                 specification::get,
+                specification::find,
                 specification::get_all,
                 specification::update,
                 specification::delete
