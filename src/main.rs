@@ -2,7 +2,6 @@
 #![feature(decl_macro)]
 #![plugin(rocket_codegen)]
 
-extern crate crossbeam;
 #[macro_use]
 extern crate diesel;
 extern crate dotenv;
@@ -12,7 +11,6 @@ extern crate rocket_contrib;
 #[macro_use]
 extern crate serde_derive;
 
-use crossbeam::queue::MsQueue;
 use dotenv::dotenv;
 use std::env;
 
@@ -20,7 +18,6 @@ pub mod order;
 pub mod product;
 pub mod specification;
 pub mod db_pool;
-pub mod opf;
 pub mod schema;
 
 fn main() {
@@ -29,7 +26,6 @@ fn main() {
         .expect("DATABASE_URL must be set");
     rocket::ignite()
         .manage(db_pool::init_pool(&database_url))
-        .manage(opf::OrdersChannel::new(MsQueue::new()))
         .mount(
             "/orders",
             routes![

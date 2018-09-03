@@ -1,10 +1,6 @@
 use db_pool;
 use diesel;
 use diesel::prelude::*;
-use opf::OrderAction;
-use opf::OrderEvent;
-use opf::OrdersChannel;
-use rocket::State;
 use rocket_contrib::Json;
 use schema::orders;
 
@@ -13,6 +9,7 @@ pub struct Order {
     pub id: i32,
     pub specification_id: i32,
     pub quantity: i32,
+//    pub status: Status,
 }
 
 #[derive(Deserialize, Insertable)]
@@ -22,6 +19,7 @@ pub struct NewOrder {
     pub quantity: i32,
 }
 
+#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 pub enum Status {
     Entering,
     InProgress,
@@ -62,19 +60,12 @@ fn start(fid: i32, conn: db_pool::DbConn) -> Json<Order> {
 }
 
 #[post("/<fid>/cancel")]
-fn cancel(fid: i32, conn: db_pool::DbConn, orders_channel: State<OrdersChannel>) -> Json<Order> {
+fn cancel(fid: i32, conn: db_pool::DbConn) -> Json<Order> {
     use schema::orders::dsl::*;
     let order: Order = orders
         .find(fid)
         .first::<Order>(&*conn)
         .expect("Error loading order");
-    orders_channel.push(
-        OrderEvent {
-            action: OrderAction::New,
-            quantity: order.quantity,
-            specification_id: order.specification_id,
-        }
-    );
     println!("{:?} has been cancelled", order);
     Json(order)
 }

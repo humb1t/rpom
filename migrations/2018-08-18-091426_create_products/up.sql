@@ -1,5 +1,5 @@
 CREATE TABLE products (
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   specification_id INTEGER NOT NULL,
   FOREIGN KEY (specification_id) REFERENCES specifications(id)
 )

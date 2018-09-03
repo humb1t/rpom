@@ -1,30 +1,30 @@
 table! {
     orders (id) {
-        id -> Integer,
-        specification_id -> Integer,
-        quantity -> Integer,
+        id -> Int4,
+        specification_id -> Int4,
+        quantity -> Int4,
     }
 }
 
 table! {
     product_orders (id) {
-        id -> Integer,
-        product_id -> Integer,
-        order_id -> Integer,
+        id -> Int4,
+        product_id -> Int4,
+        order_id -> Int4,
     }
 }
 
 table! {
     products (id) {
-        id -> Integer,
-        specification_id -> Integer,
+        id -> Int4,
+        specification_id -> Int4,
     }
 }
 
 table! {
     specifications (id) {
-        id -> Integer,
-        name -> Text,
+        id -> Int4,
+        name -> Varchar,
     }
 }
 
