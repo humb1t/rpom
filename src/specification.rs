@@ -2,7 +2,6 @@ use db_pool;
 use diesel;
 use diesel::prelude::*;
 use rocket::http::RawStr;
-use rocket::request::FromForm;
 use rocket_contrib::Json;
 use schema::specifications;
 
