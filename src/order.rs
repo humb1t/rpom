@@ -17,6 +17,7 @@ pub struct Order {
 pub struct NewOrder {
     pub specification_id: i32,
     pub quantity: i32,
+    pub status: OrderStatus,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, DbEnum)]
@@ -68,9 +69,11 @@ fn start(fid: i32, conn: db_pool::DbConn) -> Json<Order> {
 #[post("/<fid>/cancel")]
 fn cancel(fid: i32, conn: db_pool::DbConn) -> Json<Order> {
     use schema::orders::dsl::*;
-    let order: Order = orders
-        .find(fid)
-        .first::<Order>(&*conn)
+    let order = diesel::update(
+        orders
+            .find(fid)
+    ).set(status.eq(OrderStatus::Cancelled))
+        .get_result::<Order>(&*conn)
         .expect("Error loading order");
     println!("{:?} has been cancelled", order);
     Json(order)

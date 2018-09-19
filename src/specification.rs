@@ -5,10 +5,16 @@ use rocket::http::RawStr;
 use rocket_contrib::Json;
 use schema::specifications;
 
-#[derive(Serialize, Deserialize, Queryable, AsChangeset, Insertable, Clone)]
+#[derive(Serialize, Deserialize, Queryable, AsChangeset, Clone)]
 #[table_name = "specifications"]
 pub struct Specification {
     pub id: i32,
+    pub name: String,
+}
+
+#[derive(Deserialize, Insertable)]
+#[table_name = "specifications"]
+pub struct NewSpecification {
     pub name: String,
 }
 
@@ -18,20 +24,15 @@ pub struct SpecForm<'r> {
 }
 
 #[post("/", data = "<specification>")]
-fn create(specification: Json<Specification>, conn: db_pool::DbConn) -> Json<Specification> {
+fn create(specification: Json<NewSpecification>, conn: db_pool::DbConn) -> Json<Specification> {
     use schema::specifications::dsl::*;
-    let specification: Specification = specification.0;
-    let pid: i32 = specification.id;
-    diesel::insert_into(specifications)
-        .values(&specification)
-        .execute(&*conn)
-        .expect("Error saving new specification");
-    let specification = specifications
-        .find(pid)
-        .first::<Specification>(&*conn)
-        .expect("Error loading specification");
-
-    Json(specification)
+    let specification: NewSpecification = specification.0;
+    Json(
+        diesel::insert_into(specifications)
+            .values(&specification)
+            .get_result(&*conn)
+            .expect("Error saving new specification")
+    )
 }
 
 #[get("/<fid>")]
