@@ -3,8 +3,10 @@ use diesel;
 use diesel::prelude::*;
 use rocket_contrib::Json;
 use schema::orders;
+use specification::Specification;
 
-#[derive(Serialize, Deserialize, Queryable, Copy, Clone, Debug)]
+#[derive(Serialize, Deserialize, Queryable, Associations, Copy, Clone, Debug)]
+#[belongs_to(Specification)]
 pub struct Order {
     pub id: i32,
     pub specification_id: i32,

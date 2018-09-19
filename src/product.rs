@@ -1,11 +1,15 @@
 use db_pool;
 use diesel;
+use diesel::deserialize::Queryable;
+use diesel::insertable::Insertable;
 use diesel::prelude::*;
 use rocket_contrib::Json;
 use schema::products;
+use specification::Specification;
 
-#[derive(Serialize, Deserialize, Queryable, Insertable, Clone)]
+#[derive(Serialize, Deserialize, Queryable, Insertable, Associations, Clone)]
 #[table_name = "products"]
+#[belongs_to(Specification)]
 pub struct Product {
     pub id: i32,
     pub specification_id: i32,

@@ -6,5 +6,6 @@ CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
   specification_id INTEGER NOT NULL,
   quantity INTEGER NOT NULL,
-  status order_status NOT NULL
+  status order_status NOT NULL,
+  FOREIGN KEY (specification_id) REFERENCES specifications(id)
 );
