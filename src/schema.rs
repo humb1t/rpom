@@ -5,6 +5,7 @@ table! {
     orders (id) {
         id -> Int4,
         specification_id -> Int4,
+        product_id -> Int4,
         quantity -> Int4,
         status -> Order_status,
     }
@@ -30,6 +31,7 @@ table! {
     }
 }
 
+joinable!(orders -> products (product_id));
 joinable!(orders -> specifications (specification_id));
 joinable!(products -> specifications (specification_id));
 

@@ -1,8 +1,11 @@
 use db_pool;
 use diesel;
+use diesel::deserialize::Queryable;
+use diesel::insertable::Insertable;
 use diesel::prelude::*;
+use product::*;
 use rocket_contrib::Json;
-use schema::orders;
+use schema::{orders, products};
 use specification::Specification;
 
 #[derive(Serialize, Deserialize, Queryable, Associations, Copy, Clone, Debug)]
@@ -10,6 +13,7 @@ use specification::Specification;
 pub struct Order {
     pub id: i32,
     pub specification_id: i32,
+    pub product_id: i32,
     pub quantity: i32,
     pub status: OrderStatus,
 }
@@ -18,6 +22,7 @@ pub struct Order {
 #[table_name = "orders"]
 pub struct NewOrder {
     pub specification_id: i32,
+    pub product_id: i32,
     pub quantity: i32,
     pub status: OrderStatus,
 }
@@ -35,7 +40,17 @@ pub enum OrderStatus {
 #[post("/", data = "<order>")]
 fn create(order: Json<NewOrder>, conn: db_pool::DbConn) -> Json<Order> {
     use schema::orders::dsl::*;
-    let order: NewOrder = order.0;
+    use schema::products::dsl::*;
+    let mut order: NewOrder = order.0;
+    let product: Product = diesel::insert_into(products)
+        .values(
+            NewProduct {
+                specification_id: order.specification_id
+            }
+        )
+        .get_result(&*conn)
+        .expect("Error saving new product");
+    order.product_id = product.id;
     Json(
         diesel::insert_into(orders)
             .values(&order)

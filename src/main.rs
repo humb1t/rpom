@@ -41,7 +41,6 @@ fn main() {
         .mount(
             "/products",
             routes![
-           product::create,
            product::get,
            product::get_all
          ],
