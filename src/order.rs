@@ -7,9 +7,11 @@ use product::*;
 use rocket_contrib::Json;
 use schema::{orders, products};
 use specification::Specification;
+use product::Product;
 
-#[derive(Serialize, Deserialize, Queryable, Associations, Copy, Clone, Debug)]
-#[belongs_to(Specification)]
+#[derive(Serialize, Deserialize, Identifiable, Queryable, Associations, Copy, Clone, Debug)]
+#[belongs_to(Product)]
+#[table_name = "orders"]
 pub struct Order {
     pub id: i32,
     pub specification_id: i32,

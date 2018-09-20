@@ -5,7 +5,7 @@ use rocket::http::RawStr;
 use rocket_contrib::Json;
 use schema::specifications;
 
-#[derive(Serialize, Deserialize, Queryable, AsChangeset, Clone)]
+#[derive(Serialize, Deserialize, Identifiable, Queryable, AsChangeset, Clone)]
 #[table_name = "specifications"]
 pub struct Specification {
     pub id: i32,

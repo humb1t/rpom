@@ -3,12 +3,14 @@ use diesel;
 use diesel::deserialize::Queryable;
 use diesel::insertable::Insertable;
 use diesel::prelude::*;
+use order::Order;
 use rocket_contrib::Json;
-use schema::products;
+use schema::{orders, products, specifications};
 use specification::Specification;
 
-#[derive(Serialize, Deserialize, Queryable, Associations, Clone)]
+#[derive(Serialize, Deserialize,Identifiable, Queryable, Associations, Clone)]
 #[belongs_to(Specification)]
+#[table_name = "products"]
 pub struct Product {
     pub id: i32,
     pub specification_id: i32,
@@ -20,15 +22,37 @@ pub struct NewProduct {
     pub specification_id: i32,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct ProductWithOrdersAndSpecification {
+    pub id: i32,
+    pub specification: Specification,
+    pub bellonging_orders: Vec<Order>,
+}
+
 #[get("/<fid>")]
-fn get(fid: i32, conn: db_pool::DbConn) -> Json<Product> {
+fn get(fid: i32, conn: db_pool::DbConn) -> Json<ProductWithOrdersAndSpecification> {
     use schema::products::dsl::*;
+    use schema::specifications::dsl::*;
+    use schema::orders::dsl::*;
     let product = products
         .find(fid)
         .first::<Product>(&*conn)
         .expect("Error loading product");
+    let specification = specifications
+        .find(product.specification_id)
+        .first::<Specification>(&*conn)
+        .expect("Error loading product's specification");
+    let orders_list = Order::belonging_to(&product)
+        .load::<Order>(&*conn)
+        .expect("Error loading product's orders");
 
-    Json(product)
+    Json(
+        ProductWithOrdersAndSpecification {
+            id: product.id,
+            specification: specification,
+            bellonging_orders: orders_list,
+        }
+    )
 }
 
 #[get("/")]
