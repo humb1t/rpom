@@ -1,0 +1,13 @@
+language: rust
+rust:
+  - nightly
+script:
+  - cargo build --verbose --all --release
+cache: cargo
+deploy:
+  provider: releases
+  api_key: ${GH_TOKEN}
+  file: "target/release/rpom"
+  skip_cleanup: true
+  on:
+    tags: true
