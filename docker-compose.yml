@@ -2,9 +2,15 @@ version: '3.1'
 
 services:
 
+  app:
+    build:
+      ./
+    environment:
+      DATABASE_URL: postgres://gandalf:mellon@localhost/pom
+    depends_on:
+      - db
   db:
     image: postgres
-    restart: always
     ports:
       - 5432:5432
     environment:
