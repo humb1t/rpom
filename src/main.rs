@@ -1,5 +1,6 @@
 #![feature(plugin)]
 #![feature(decl_macro)]
+#![feature(proc_macro_non_items)]
 #![plugin(rocket_codegen)]
 
 #[macro_use]
