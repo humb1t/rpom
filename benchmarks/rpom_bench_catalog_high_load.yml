@@ -1,0 +1,20 @@
+config:
+  target: "http://127.0.0.1:8080"
+  http:
+    tls:
+      rejectUnauthorized: false
+  phases:
+  - duration: 10
+    arrivalRate: 5
+  - duration: 20
+    arrivalRate: 5
+    rampTo: 25
+  - duration: 30
+    arrivalRate: 25
+  environments:
+    production:
+      target: "http://35.204.41.173:8000"
+scenarios:
+- flow:
+  - get:
+      url: "/specifications"

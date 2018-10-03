@@ -1,4 +1,4 @@
 CREATE TABLE specifications (
   id SERIAL PRIMARY KEY,
   name VARCHAR NOT NULL
-)
+);
