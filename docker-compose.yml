@@ -5,15 +5,24 @@ services:
   app:
     build:
       ./
+    ports:
+    - 8000:8000
     environment:
-      DATABASE_URL: postgres://gandalf:mellon@localhost/pom
+      DATABASE_URL: postgres://gandalf:mellon@postgres/pom
     depends_on:
-      - db
+    - db
+    networks:
+    - default
   db:
     image: postgres
     ports:
-      - 5432:5432
+    - 5432:5432
     environment:
       POSTGRES_USER: gandalf
       POSTGRES_PASSWORD: mellon
       POSTGRES_DB: pom
+    networks:
+    - default
+networks:
+  default:
+    driver: bridge

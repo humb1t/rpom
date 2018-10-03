@@ -1,0 +1,43 @@
+config:
+  target: "http://127.0.0.1:8080"
+  phases:
+  - duration: 60
+    arrivalRate: 5
+  - duration: 120
+    arrivalRate: 5
+    rampTo: 50
+  - duration: 600
+    arrivalRate: 50
+  environments:
+    production:
+      target: "http://localhost:800"
+  variables:
+    spec_name:
+    - "TV"
+scenarios:
+- name: "Search and order"
+  flow:
+  - get:
+      url: "/specifications/search/{{ spec_name }}"
+      capture:
+        json: "$.id"
+        as: "id"
+  - get:
+      url: "/specifications/{{ id }}"
+  - think: 3
+  - post:
+      url: "/orders"
+      json:
+        specification_id: "{{ id }}"
+        product_id: "{{ id }}"
+        quantity: "1"
+        status: "Entering"
+      capture:
+      - json: "$.id"
+        as: "order_id"
+      - json: "$.product_id"
+        as: "product_id"
+  - post:
+      url: "/orders/{{ order_id }}/start"
+  - get:
+      url: "/products/{{ product_id }}"
