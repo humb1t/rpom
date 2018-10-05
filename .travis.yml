@@ -1,6 +1,8 @@
 language: rust
 rust:
   - nightly
+services:
+  - postgresql
 script:
   - cargo build --verbose --all --release
 cache: cargo
