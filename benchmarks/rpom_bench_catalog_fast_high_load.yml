@@ -4,20 +4,7 @@ config:
     tls:
       rejectUnauthorized: false
   phases:
-  - duration: 60
-    arrivalRate: 50
   - duration: 120
-    arrivalRate: 50
-    rampTo: 100
-  - duration: 600
-    arrivalRate: 100
-  - duration: 300
-    arrivalRate: 100
-    rampTo: 200
-  - duration: 300
-    arrivalRate: 200
-    rampTo: 500
-  - duration: 600
     arrivalRate: 500
   environments:
     production:

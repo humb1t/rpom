@@ -9,10 +9,12 @@ pub type PgPool = Pool<ConnectionManager<PgConnection>>;
 
 pub struct DbConn(pub PooledConnection<ConnectionManager<PgConnection>>);
 
-pub fn init_pool(database_url: &str) -> PgPool {
+pub fn init_pool(database_url: &str, database_max_size: u32) -> PgPool {
     let manager =
         ConnectionManager::<PgConnection>::new(database_url);
-    Pool::new(manager).expect("db pool should be initialized")
+    Pool::builder()
+        .max_size(database_max_size)
+        .build(manager).expect("db pool should be initialized")
 }
 
 impl Deref for DbConn {

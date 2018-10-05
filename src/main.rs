@@ -27,8 +27,17 @@ fn main() {
     dotenv().ok();
     let database_url = env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set");
+    let database_max_size = env::var("DATABASE_MAX_SIZE")
+        .unwrap_or(String::from("10"))
+        .parse::<u32>()
+        .unwrap();
     rocket::ignite()
-        .manage(db_pool::init_pool(&database_url))
+        .manage(
+            db_pool::init_pool(
+                &database_url,
+                database_max_size
+            )
+        )
         .mount(
             "/orders",
             routes![
